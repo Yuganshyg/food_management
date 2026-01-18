@@ -1,0 +1,31 @@
+{
+  "mealPlans": [
+    {
+      "id": 1,
+      "name": "Option Plan 1",
+      "frequency": "daily",
+      "amount": 500,
+      "meals": [
+        {
+          "id": 1,
+          "type": "breakfast",
+          "startTime": "08:00",
+          "endTime": "10:00",
+          "items": [
+            { "diet": "veg", "name": "Poha" },
+            { "diet": "veg", "name": "Upma" }
+          ]
+        },
+        {
+          "id": 2,
+          "type": "dinner",
+          "startTime": "20:00",
+          "endTime": "22:00",
+          "items": [
+            { "diet": "non-veg", "name": "Chicken Curry" }
+          ]
+        }
+      ]
+    }
+  ]
+}
