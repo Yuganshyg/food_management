@@ -30,7 +30,7 @@ class FoodManagementApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          home: const FoodManagementHome(), // ✅ ONLY THIS
+          home: const FoodManagementHome(),
         ),
       ),
     );
