@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:food_management/presentation/screens/feedback_screen.dart';
+import 'package:food_management/presentation/screens/meal_track_screen.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_icons.dart';
 import 'meal_plan_list_screen.dart';
+import 'menu_screen.dart';
+import 'add_plan_screen.dart';
 
 class FoodManagementHome extends StatefulWidget {
   const FoodManagementHome({super.key});
@@ -15,25 +19,34 @@ class FoodManagementHome extends StatefulWidget {
 class _FoodManagementHomeState extends State<FoodManagementHome> {
   int selectedIndex = 0;
 
+  final tabs = [
+    AppIcons.mealPlan,
+    AppIcons.menu,
+    AppIcons.mealTrack,
+    AppIcons.feedback,
+  ];
+
+  final labels = ['Meal Plan', 'Menu', 'Meal Track', 'Feedback'];
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+      backgroundColor: AppColors.bgDark,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(isDark),
-            _buildTabs(isDark),
+            _header(),
+            _tabBar(isDark),
             Expanded(
               child: IndexedStack(
                 index: selectedIndex,
                 children: const [
                   MealPlanListScreen(),
-                  Center(child: Text('Menu')),
-                  Center(child: Text('Meal Track')),
-                  Center(child: Text('Feedback')),
+                  MenuScreen(),
+                  MealTrackScreen(),
+                  FeedbackScreen(),
                 ],
               ),
             ),
@@ -45,66 +58,42 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
 
   // ---------------- HEADER ----------------
 
-  Widget _buildHeader(bool isDark) {
+  Widget _header() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          /// Back arrow (Material icon – NOT in SVG)
-          Icon(
-            Icons.arrow_back,
-            size: 22,
-            color: isDark
-                ? AppColors.textPrimaryDark
-                : AppColors.textPrimaryLight,
-          ),
+          const Icon(Icons.arrow_back, color: Colors.white),
           const SizedBox(width: 12),
-
-          /// Title
-          Text(
+          const Text(
             'Food Management',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
-
           const Spacer(),
 
-          TextButton.icon(
-            onPressed: () {
-              // TODO: navigate to Add Plan screen
-            },
-            icon: Icon(Icons.add, size: 20, color: AppColors.accentBlue),
-            label: const Text(
-              'Add Plan',
-              style: TextStyle(
-                color: AppColors.accentBlue,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+          /// Add Plan ONLY on Meal Plan tab
+          if (selectedIndex == 0)
+            TextButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddPlanScreen()),
+                );
+              },
+              icon: const Icon(Icons.add, color: AppColors.accentBlue),
+              label: const Text(
+                'Add Plan',
+                style: TextStyle(color: AppColors.accentBlue),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  // ---------------- TABS ----------------
+  // ---------------- TAB BAR (SVG ICONS RESTORED) ----------------
 
-  Widget _buildTabs(bool isDark) {
-    final tabs = [
-      AppIcons.mealPlan,
-      AppIcons.menu,
-      AppIcons.mealTrack,
-      AppIcons.feedback,
-    ];
-
-    final labels = ['Meal Plan', 'Menu', 'Meal Track', 'Feedback'];
-
+  Widget _tabBar(bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -120,11 +109,7 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
                   tabs[index],
                   height: 24,
                   colorFilter: ColorFilter.mode(
-                    isSelected
-                        ? AppColors.accentBlue
-                        : (isDark
-                              ? AppColors.textMutedDark
-                              : AppColors.textMutedLight),
+                    isSelected ? AppColors.accentBlue : AppColors.textMutedDark,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -135,9 +120,7 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
                     fontSize: 13,
                     color: isSelected
                         ? AppColors.accentBlue
-                        : (isDark
-                              ? AppColors.textMutedDark
-                              : AppColors.textMutedLight),
+                        : AppColors.textMutedDark,
                   ),
                 ),
                 const SizedBox(height: 6),

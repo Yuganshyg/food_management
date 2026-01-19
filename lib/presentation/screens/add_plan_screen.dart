@@ -9,66 +9,63 @@ class AddPlanScreen extends StatefulWidget {
 }
 
 class _AddPlanScreenState extends State<AddPlanScreen> {
-  final TextEditingController _planNameController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController planNameController = TextEditingController();
+  final TextEditingController amountController = TextEditingController();
 
-  final Map<String, bool> _meals = {
+  final meals = {
     'Breakfast': false,
     'Lunch': false,
     'Snacks': false,
     'Dinner': false,
   };
 
-  String _frequency = 'Daily';
+  String frequency = 'Daily';
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: AppColors.bgDark,
+      resizeToAvoidBottomInset: true, // 🔴 IMPORTANT
       appBar: AppBar(
         backgroundColor: AppColors.bgDark,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const BackButton(),
         title: const Text('Add Plan'),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: SingleChildScrollView(
+          // 🔴 IMPORTANT
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionTitle('Plan name'),
-              _underlineInput(
-                controller: _planNameController,
+              _label('Plan name'),
+              _underlineField(
+                controller: planNameController,
                 hint: 'Enter plan name',
               ),
-
               const SizedBox(height: 24),
 
-              _sectionTitle('Select meals'),
-              ..._meals.keys.map(_mealRow).toList(),
+              _label('Select meals'),
+              ...meals.keys.map(_mealCheckbox).toList(),
 
               const SizedBox(height: 24),
-
-              _sectionTitle('Frequency'),
-              _frequencySelector(),
+              _label('Frequency'),
+              _frequencyRow(),
 
               const SizedBox(height: 24),
-
-              _sectionTitle('Amount'),
-              _underlineInput(
-                controller: _amountController,
+              _label('Amount'),
+              _underlineField(
+                controller: amountController,
                 hint: 'Enter amount',
                 keyboardType: TextInputType.number,
               ),
 
-              const Spacer(),
-
+              const SizedBox(height: 32),
               _saveButton(),
             ],
           ),
@@ -77,9 +74,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  // ---------------- UI COMPONENTS ----------------
-
-  Widget _sectionTitle(String text) {
+  Widget _label(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
@@ -89,7 +84,7 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  Widget _underlineInput({
+  Widget _underlineField({
     required TextEditingController controller,
     required String hint,
     TextInputType keyboardType = TextInputType.text,
@@ -98,59 +93,52 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       controller: controller,
       keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: AppColors.textMutedDark),
-        enabledBorder: const UnderlineInputBorder(
+      decoration: const InputDecoration(
+        hintText: '',
+        enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: AppColors.textMutedDark),
         ),
-        focusedBorder: const UnderlineInputBorder(
+        focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(color: AppColors.accentBlue),
         ),
       ),
     );
   }
 
-  Widget _mealRow(String meal) {
+  Widget _mealCheckbox(String meal) {
     return CheckboxListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(meal, style: const TextStyle(color: Colors.white)),
-      value: _meals[meal],
+      value: meals[meal],
       activeColor: AppColors.accentBlue,
-      onChanged: (value) {
-        setState(() {
-          _meals[meal] = value ?? false;
-        });
-      },
+      onChanged: (val) => setState(() => meals[meal] = val ?? false),
       controlAffinity: ListTileControlAffinity.trailing,
     );
   }
 
-  Widget _frequencySelector() {
+  Widget _frequencyRow() {
     final options = ['Daily', 'Weekly', 'Monthly'];
 
     return Row(
-      children: options.map((option) {
-        final isSelected = _frequency == option;
+      children: options.map((opt) {
+        final selected = frequency == opt;
 
         return Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => _frequency = option),
+            onTap: () => setState(() => frequency = opt),
             child: Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.accentBlue : Colors.transparent,
+                color: selected ? AppColors.accentBlue : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.accentBlue),
               ),
               child: Center(
                 child: Text(
-                  option,
+                  opt,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.accentBlue,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    color: selected ? Colors.white : AppColors.accentBlue,
                   ),
                 ),
               ),
@@ -172,33 +160,12 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
             borderRadius: BorderRadius.circular(24),
           ),
         ),
-        onPressed: _onSave,
+        onPressed: () {},
         child: const Text(
           'Save & Continue',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
     );
-  }
-
-  // ---------------- LOGIC ----------------
-
-  void _onSave() {
-    if (_planNameController.text.isEmpty ||
-        _amountController.text.isEmpty ||
-        !_meals.containsValue(true)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
-      );
-      return;
-    }
-
-    // STEP 6: Navigate to Set Plan Screen
-    // Navigator.push(...)
-
-    debugPrint('Plan Name: ${_planNameController.text}');
-    debugPrint('Meals: $_meals');
-    debugPrint('Frequency: $_frequency');
-    debugPrint('Amount: ${_amountController.text}');
   }
 }
