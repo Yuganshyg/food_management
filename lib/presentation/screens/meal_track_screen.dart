@@ -23,6 +23,7 @@ class _MealTrackScreenState extends State<MealTrackScreen> {
   bool isPlanExpanded = false;
 
   final weekDays = const ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  final weekKeys = const ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +37,7 @@ class _MealTrackScreenState extends State<MealTrackScreen> {
 
         final plans = state.plans;
         final selectedPlan = plans[selectedPlanIndex];
+        final selectedDayKey = weekKeys[selectedDayIndex];
 
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
@@ -52,7 +54,16 @@ class _MealTrackScreenState extends State<MealTrackScreen> {
               _dateChip(dateText),
 
               const SizedBox(height: 20),
-              ...selectedPlan.meals.map(_mealTrackCard).toList(),
+
+              ...selectedPlan.meals.map((meal) {
+                /// 🔑 FIX 1: Normalize meal type
+                final mealKey =
+                    '${meal.type[0].toUpperCase()}${meal.type.substring(1).toLowerCase()}';
+
+                final counts = selectedPlan.mealTrack[selectedDayKey]?[mealKey];
+
+                return _mealTrackCard(meal, counts);
+              }).toList(),
             ],
           ),
         );
@@ -75,16 +86,12 @@ class _MealTrackScreenState extends State<MealTrackScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              plans[selectedPlanIndex].name,
-              style: const TextStyle(color: Colors.white),
-            ),
+            Text(plans[selectedPlanIndex].name),
             const SizedBox(width: 8),
             Icon(
               isPlanExpanded
                   ? Icons.keyboard_arrow_up
                   : Icons.keyboard_arrow_down,
-              color: Colors.white,
             ),
           ],
         ),
@@ -181,13 +188,12 @@ class _MealTrackScreenState extends State<MealTrackScreen> {
     );
   }
 
-  // ---------------- SVG SLANTED CARD ----------------
+  // ---------------- MEAL TRACK CARD ----------------
 
-  Widget _mealTrackCard(Meal meal) {
-    final vegCount = meal.items.where((item) => item.diet == 'veg').length;
-    final nonVegCount = meal.items
-        .where((item) => item.diet == 'nonVeg')
-        .length;
+  Widget _mealTrackCard(Meal meal, Map<String, int>? counts) {
+    /// 🔑 FIX 2: Correct keys
+    final vegCount = counts?['veg'] ?? 0;
+    final nonVegCount = counts?['nonVeg'] ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -227,41 +233,27 @@ class _MealTrackScreenState extends State<MealTrackScreen> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      SvgPicture.asset(AppIcons.veg, height: 16),
-                      const SizedBox(width: 6),
-                      Text(
-                        vegCount.toString().padLeft(2, '0'),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      SvgPicture.asset(AppIcons.nonVeg, height: 16),
-                      const SizedBox(width: 6),
-                      Text(
-                        nonVegCount.toString().padLeft(2, '0'),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+                  SvgPicture.asset(AppIcons.veg, height: 16),
+                  const SizedBox(width: 6),
                   Text(
-                    'All people are able to attend ${meal.type}.',
+                    vegCount.toString().padLeft(2, '0'),
                     style: const TextStyle(
-                      color: AppColors.textMutedDark,
-                      fontSize: 13,
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  SvgPicture.asset(AppIcons.nonVeg, height: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    nonVegCount.toString().padLeft(2, '0'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

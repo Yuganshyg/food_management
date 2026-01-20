@@ -52,6 +52,18 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
     });
   }
 
+  /// 🔑 INITIAL MEAL TRACK STRUCTURE
+  Map<String, Map<String, Map<String, int>>> _buildInitialMealTrack() {
+    final Map<String, Map<String, Map<String, int>>> track = {};
+
+    for (final meal in mealDrafts) {
+      track.putIfAbsent('mon', () => {});
+      track['mon']![meal.type] = {'veg': 0, 'nonVeg': 0};
+    }
+
+    return track;
+  }
+
   void _savePlan() {
     final finalPlan = DraftMapper.toMealPlan(
       id: widget.existingPlan?.id ?? DateTime.now().millisecondsSinceEpoch,
@@ -60,6 +72,9 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
       amount: widget.draftPlan.amount,
       meals: mealDrafts,
       mealPrices: widget.draftPlan.mealPrices,
+
+      // ✅ FIX: mealTrack PASSED
+      mealTrack: widget.existingPlan?.mealTrack ?? _buildInitialMealTrack(),
     );
 
     final bloc = context.read<MealPlanBloc>();

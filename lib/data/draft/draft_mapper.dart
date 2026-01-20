@@ -5,9 +5,9 @@ import 'meal_draft.dart';
 import 'meal_item_draft.dart';
 
 class DraftMapper {
-  static Meal toMeal(MealDraft draft, int mealId) {
+  static Meal toMeal(MealDraft draft, int id) {
     return Meal(
-      id: mealId,
+      id: id,
       type: draft.type,
       startTime: draft.startTime,
       endTime: draft.endTime,
@@ -29,6 +29,7 @@ class DraftMapper {
     required int amount,
     required List<MealDraft> meals,
     required Map<String, int> mealPrices,
+    required Map<String, Map<String, Map<String, int>>> mealTrack,
   }) {
     return MealPlan(
       id: id,
@@ -42,6 +43,7 @@ class DraftMapper {
           .entries
           .map((e) => toMeal(e.value, e.key + 1))
           .toList(),
+      mealTrack: mealTrack,
     );
   }
 }

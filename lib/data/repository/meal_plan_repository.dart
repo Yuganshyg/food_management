@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../models/meal_plan_model.dart';
@@ -11,7 +10,6 @@ class MealPlanRepository implements MealRepository {
   final MealDataStore _store = MealDataStore();
   bool _initialized = false;
 
-  // ───────── INITIALIZE FROM ASSETS ─────────
   Future<void> _initIfNeeded() async {
     if (_initialized) return;
 
@@ -21,27 +19,24 @@ class MealPlanRepository implements MealRepository {
     _initialized = true;
   }
 
-  // ───────── READ ─────────
   @override
   Future<List<MealPlan>> fetchMealPlans() async {
     await _initIfNeeded();
     return _store.getMealPlans();
   }
 
-  // ───────── CREATE ─────────
   @override
   Future<void> addMealPlan(MealPlan plan) async {
     await _initIfNeeded();
 
     final withId = plan.copyWith(id: _store.getNextPlanId());
 
-    _store.addMealPlan(withId);
+    await _store.addMealPlan(withId);
   }
 
-  // ───────── UPDATE ─────────
   @override
   Future<void> updateMealPlan(MealPlan plan) async {
     await _initIfNeeded();
-    _store.updateMealPlan(plan);
+    await _store.updateMealPlan(plan);
   }
 }

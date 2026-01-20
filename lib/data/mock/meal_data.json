@@ -5,6 +5,48 @@
       "name": "Option Plan 1",
       "frequency": "daily",
       "amount": 500,
+      "selectedMeals": ["Breakfast", "Dinner"],
+      "mealPrices": {
+    "Breakfast": 30,
+    "Dinner": 80
+  },
+      "mealTrack": {
+        "sun": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "mon": {
+          "Breakfast": { "veg": 10, "nonVeg": 6 },
+          "Lunch":     { "veg": 22, "nonVeg": 12 },
+          "Dinner":    { "veg": 19, "nonVeg": 11 }
+        },
+        "tue": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "wed": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "thu": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "fri": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "sat": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        }
+      },
       "meals": [
         {
           "id": 1,
@@ -32,6 +74,48 @@
       "name": "Option Plan 2",
       "frequency": "monthly",
       "amount": 4700,
+      "selectedMeals": ["Breakfast", "Lunch"],
+      "mealPrices": {
+    "Breakfast": 30,
+    "Lunch": 80
+  },
+      "mealTrack": {
+        "sun": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "mon": {
+          "Breakfast": { "veg": 10, "nonVeg": 6 },
+          "Lunch":     { "veg": 22, "nonVeg": 12 },
+          "Dinner":    { "veg": 19, "nonVeg": 11 }
+        },
+        "tue": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "wed": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "thu": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "fri": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        },
+        "sat": {
+          "Breakfast": { "veg": 12, "nonVeg": 8 },
+          "Lunch":     { "veg": 20, "nonVeg": 15 },
+          "Dinner":    { "veg": 18, "nonVeg": 14 }
+        }
+      },
       "meals": [
         {
           "id": 1,

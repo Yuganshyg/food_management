@@ -10,12 +10,10 @@ class MealDataStore {
 
   List<MealPlan> _plans = [];
 
-  /// Load from local file OR create from assets
   Future<void> initializeFromAssets(String assetJson) async {
     final file = await _localFile;
 
     if (!await file.exists()) {
-      // First launch → create local copy
       await file.writeAsString(assetJson);
     }
 
@@ -46,12 +44,9 @@ class MealDataStore {
     }
   }
 
-  /// WRITE BACK TO FILE
   Future<void> _persist() async {
     final file = await _localFile;
-
     final data = {'mealPlans': _plans.map((e) => e.toJson()).toList()};
-
     await file.writeAsString(json.encode(data), flush: true);
   }
 
