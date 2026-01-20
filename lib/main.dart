@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:food_management/bloc/meal_plan/meal_plan_event.dart';
-import 'package:food_management/core/theme/theme_state.dart';
-import 'package:food_management/data/repository/meal_plan_repository.dart';
 
+import 'bloc/meal_plan/meal_plan_bloc.dart';
+import 'bloc/meal_plan/meal_plan_event.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
-import 'bloc/meal_plan/meal_plan_bloc.dart';
+import 'core/theme/theme_state.dart';
+import 'data/repository/meal_plan_repository.dart';
 import 'presentation/screens/food_management_home.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const FoodManagementApp());
 }
 
@@ -18,15 +19,19 @@ class FoodManagementApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    /// 🔑 SINGLE repository instance (important for physical device)
+    final mealPlanRepository = MealPlanRepository();
+
     return MultiBlocProvider(
       providers: [
         /// Theme cubit (system theme driven)
         BlocProvider(create: (_) => ThemeCubit()),
 
-        /// Meal plan bloc (used across multiple screens)
+        /// Meal plan bloc (global)
         BlocProvider(
           create: (_) =>
-              MealPlanBloc(MealPlanRepository())..add(LoadMealPlans()),
+              MealPlanBloc(mealPlanRepository)
+                ..add(LoadMealPlans()), // ✅ REQUIRED
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
@@ -35,11 +40,11 @@ class FoodManagementApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Food Management',
 
-            /// Light & Dark themes from SVG
+            /// Light & Dark themes (SVG based)
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
 
-            /// 🔑 SYSTEM THEME (IMPORTANT)
+            /// 🔑 Follow system theme
             themeMode: ThemeMode.system,
 
             home: const FoodManagementHome(),

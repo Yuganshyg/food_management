@@ -1,3 +1,5 @@
+import 'package:food_management/data/models/feedback_item.dart';
+
 import '../models/meal_model.dart';
 import '../models/meal_item_model.dart';
 import '../models/meal_plan_model.dart';
@@ -30,6 +32,7 @@ class DraftMapper {
     required List<MealDraft> meals,
     required Map<String, int> mealPrices,
     required Map<String, Map<String, Map<String, int>>> mealTrack,
+    required Map<String, List<FeedbackItem>> feedback,
   }) {
     return MealPlan(
       id: id,
@@ -38,12 +41,13 @@ class DraftMapper {
       amount: amount,
       selectedMeals: meals.map((e) => e.type).toList(),
       mealPrices: mealPrices,
+      feedback: feedback,
+      mealTrack: mealTrack,
       meals: meals
           .asMap()
           .entries
           .map((e) => toMeal(e.value, e.key + 1))
           .toList(),
-      mealTrack: mealTrack,
     );
   }
 }

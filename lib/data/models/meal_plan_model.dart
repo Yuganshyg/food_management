@@ -1,4 +1,5 @@
 import 'meal_model.dart';
+import 'feedback_item.dart';
 
 class MealPlan {
   final int id;
@@ -6,14 +7,14 @@ class MealPlan {
   final String frequency;
   final int amount;
   final List<String> selectedMeals;
-
-  /// price per meal (Breakfast → 30 etc.)
   final Map<String, int> mealPrices;
+  final List<Meal> meals;
 
-  /// day → meal → { veg, nonVeg }
+  /// day -> meal -> { veg, nonVeg }
   final Map<String, Map<String, Map<String, int>>> mealTrack;
 
-  final List<Meal> meals;
+  /// meal -> feedback list
+  final Map<String, List<FeedbackItem>> feedback;
 
   MealPlan({
     required this.id,
@@ -22,12 +23,13 @@ class MealPlan {
     required this.amount,
     required this.selectedMeals,
     required this.mealPrices,
-    required this.mealTrack,
     required this.meals,
+    required this.mealTrack,
+    required this.feedback,
   });
 
   // ─────────────────────────────────────────────
-  // DRAFT CONSTRUCTOR (AddPlanScreen → SetPlan)
+  // DRAFT CONSTRUCTOR (FIXES AddPlanScreen)
   // ─────────────────────────────────────────────
   factory MealPlan.draft({
     required String name,
@@ -37,19 +39,20 @@ class MealPlan {
     required Map<String, int> mealPrices,
   }) {
     return MealPlan(
-      id: -1, // temporary, replaced later
+      id: -1,
       name: name,
       frequency: frequency,
       amount: amount,
       selectedMeals: selectedMeals,
       mealPrices: mealPrices,
-      mealTrack: {}, // created later
-      meals: [],
+      meals: const [],
+      mealTrack: const {},
+      feedback: const {},
     );
   }
 
   // ─────────────────────────────────────────────
-  // COPY WITH (Repository uses this)
+  // COPY WITH (FIXES Repository)
   // ─────────────────────────────────────────────
   MealPlan copyWith({
     int? id,
@@ -58,8 +61,9 @@ class MealPlan {
     int? amount,
     List<String>? selectedMeals,
     Map<String, int>? mealPrices,
-    Map<String, Map<String, Map<String, int>>>? mealTrack,
     List<Meal>? meals,
+    Map<String, Map<String, Map<String, int>>>? mealTrack,
+    Map<String, List<FeedbackItem>>? feedback,
   }) {
     return MealPlan(
       id: id ?? this.id,
@@ -68,13 +72,14 @@ class MealPlan {
       amount: amount ?? this.amount,
       selectedMeals: selectedMeals ?? this.selectedMeals,
       mealPrices: mealPrices ?? this.mealPrices,
-      mealTrack: mealTrack ?? this.mealTrack,
       meals: meals ?? this.meals,
+      mealTrack: mealTrack ?? this.mealTrack,
+      feedback: feedback ?? this.feedback,
     );
   }
 
   // ─────────────────────────────────────────────
-  // JSON
+  // FROM JSON (FIXES LOADER CRASH)
   // ─────────────────────────────────────────────
   factory MealPlan.fromJson(Map<String, dynamic> json) {
     return MealPlan(
@@ -84,21 +89,27 @@ class MealPlan {
       amount: json['amount'],
       selectedMeals: List<String>.from(json['selectedMeals']),
       mealPrices: Map<String, int>.from(json['mealPrices'] ?? {}),
+      meals: (json['meals'] as List).map((e) => Meal.fromJson(e)).toList(),
       mealTrack: (json['mealTrack'] as Map<String, dynamic>).map(
         (day, meals) => MapEntry(
           day,
           (meals as Map<String, dynamic>).map(
-            (meal, counts) => MapEntry(meal, {
-              'veg': counts['veg'] ?? 0,
-              'nonVeg': counts['nonVeg'] ?? 0,
-            }),
+            (meal, counts) => MapEntry(meal, Map<String, int>.from(counts)),
           ),
         ),
       ),
-      meals: (json['meals'] as List).map((e) => Meal.fromJson(e)).toList(),
+      feedback: (json['feedback'] as Map<String, dynamic>? ?? {}).map(
+        (meal, list) => MapEntry(
+          meal,
+          (list as List).map((e) => FeedbackItem.fromJson(e)).toList(),
+        ),
+      ),
     );
   }
 
+  // ─────────────────────────────────────────────
+  // TO JSON (FIXES SAVE / PERSIST)
+  // ─────────────────────────────────────────────
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -107,8 +118,12 @@ class MealPlan {
       'amount': amount,
       'selectedMeals': selectedMeals,
       'mealPrices': mealPrices,
-      'mealTrack': mealTrack,
       'meals': meals.map((e) => e.toJson()).toList(),
+      'mealTrack': mealTrack,
+      'feedback': {
+        for (final e in feedback.entries)
+          e.key: e.value.map((f) => f.toJson()).toList(),
+      },
     };
   }
 }

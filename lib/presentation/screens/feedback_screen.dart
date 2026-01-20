@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../bloc/meal_plan/meal_plan_bloc.dart';
+import '../../bloc/meal_plan/meal_plan_state.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_icons.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -12,227 +12,249 @@ class FeedbackScreen extends StatefulWidget {
   State<FeedbackScreen> createState() => _FeedbackScreenState();
 }
 
-/// Strongly typed tab model (NO MAPS → NO TYPE ERRORS)
-class MealTab {
-  final String label;
-  final String icon;
-
-  const MealTab({required this.label, required this.icon});
-}
-
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  int selectedMealIndex = 0;
+  String selectedMeal = 'Breakfast';
 
-  final List<MealTab> mealTabs = const [
-    MealTab(label: 'Breakfast', icon: AppIcons.breakfast),
-    MealTab(label: 'Lunch', icon: AppIcons.lunch),
-    MealTab(label: 'Snacks', icon: AppIcons.snacks),
-    MealTab(label: 'Dinner', icon: AppIcons.dinner),
+  /// SVG meal tabs
+  final meals = const [
+    ('Breakfast', Icons.free_breakfast),
+    ('Lunch', Icons.restaurant),
+    ('Snacks', Icons.cookie),
+    ('Dinner', Icons.dinner_dining),
   ];
 
-  final List<Map<String, dynamic>> feedbacks = [
-    {
-      'name': 'Amit',
-      'message': 'Food quality was really good today.',
-      'rating': 4,
-      'date': DateTime.now(),
-      'time': '09:30 AM',
-    },
-    {
-      'name': 'Sneha',
-      'message': 'Lunch was tasty but a bit oily.',
-      'rating': 3,
-      'date': DateTime.now(),
-      'time': '02:10 PM',
-    },
-    {
-      'name': 'Rahul',
-      'message': 'Dinner was excellent. Loved it!',
-      'rating': 5,
-      'date': DateTime.now(),
-      'time': '09:45 PM',
-    },
-  ];
+  /// 🔒 SVG DUMMY DATA (used if JSON data missing)
+  final Map<String, List<_FeedbackUiModel>> dummyFeedback = {
+    'Breakfast': [
+      _FeedbackUiModel(
+        name: 'Rajat Kumar',
+        comment:
+            'The food quality was good but spoon and glass need to be clean properly',
+        rating: 4,
+        date: '08 Oct, 2024',
+        time: '11:02am',
+      ),
+      _FeedbackUiModel(
+        name: 'Shyam Kumar',
+        comment:
+            'The food quality was good but spoon and glass need to be clean properly',
+        rating: 4,
+        date: '08 Oct, 2024',
+        time: '11:02am',
+      ),
+      _FeedbackUiModel(
+        name: 'Amit Kumar',
+        comment:
+            'The food quality was good but spoon and glass need to be clean properly',
+        rating: 4,
+        date: '08 Oct, 2024',
+        time: '11:02am',
+      ),
+    ],
+    'Lunch': [],
+    'Snacks': [],
+    'Dinner': [],
+  };
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _mealTabsRow(),
-          const SizedBox(height: 20),
-          Expanded(child: _feedbackList()),
-        ],
-      ),
-    );
-  }
+    return BlocBuilder<MealPlanBloc, MealPlanState>(
+      builder: (context, state) {
+        // 🔒 Always render UI (no loader block)
+        final feedbackList = dummyFeedback[selectedMeal] ?? [];
 
-  // ---------------- MEAL TABS ----------------
+        return Column(
+          children: [
+            const SizedBox(height: 12),
 
-  Widget _mealTabsRow() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: List.generate(mealTabs.length, (index) {
-          final tab = mealTabs[index];
-          final isSelected = selectedMealIndex == index;
-
-          return GestureDetector(
-            onTap: () => setState(() => selectedMealIndex = index),
-            child: Container(
-              margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.accentBlue.withOpacity(0.15)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.accentBlue
-                      : AppColors.textMutedDark,
-                ),
-              ),
+            // ───────── MEAL TABS (SVG MATCH) ─────────
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
-                children: [
-                  SvgPicture.asset(
-                    tab.icon,
-                    height: 16,
-                    color: isSelected
-                        ? AppColors.accentBlue
-                        : AppColors.textMutedDark,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    tab.label,
-                    style: TextStyle(
-                      color: isSelected
-                          ? AppColors.accentBlue
-                          : AppColors.textMutedDark,
-                      fontWeight: FontWeight.w600,
+                children: meals.map((entry) {
+                  final meal = entry.$1;
+                  final icon = entry.$2;
+                  final isSelected = meal == selectedMeal;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: GestureDetector(
+                      onTap: () => setState(() => selectedMeal = meal),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.accentBlue.withOpacity(0.15)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.accentBlue
+                                : AppColors.textMutedDark,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              icon,
+                              size: 16,
+                              color: isSelected
+                                  ? AppColors.accentBlue
+                                  : AppColors.textMutedDark,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              meal,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? AppColors.accentBlue
+                                    : AppColors.textMutedDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  );
+                }).toList(),
               ),
             ),
-          );
-        }),
-      ),
-    );
-  }
 
-  // ---------------- FEEDBACK LIST ----------------
+            const SizedBox(height: 20),
 
-  Widget _feedbackList() {
-    return ListView.builder(
-      itemCount: feedbacks.length,
-      itemBuilder: (_, index) {
-        return _feedbackCard(feedbacks[index]);
+            // ───────── FEEDBACK LIST ─────────
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: feedbackList.length,
+                itemBuilder: (_, index) {
+                  final feedback = feedbackList[index];
+                  final initial = feedback.name[0].toUpperCase();
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E2E38),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.accentBlue.withOpacity(0.35),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ─── HEADER ───
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 22,
+                              backgroundColor: AppColors.accentBlue.withOpacity(
+                                0.2,
+                              ),
+                              child: Text(
+                                initial,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.accentBlue,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    feedback.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    feedback.date,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textMutedDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            Text(
+                              feedback.time,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMutedDark,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ─── COMMENT ───
+                        Text(
+                          feedback.comment,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.4,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ─── STARS (YELLOW, SVG MATCH) ───
+                        Row(
+                          children: List.generate(5, (i) {
+                            return Icon(
+                              i < feedback.rating
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              size: 20,
+                              color: Colors.amber,
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
       },
     );
   }
+}
 
-  // ---------------- FEEDBACK CARD ----------------
+/// 🔒 UI-ONLY MODEL (DO NOT CONNECT TO DATA LAYER)
+class _FeedbackUiModel {
+  final String name;
+  final String comment;
+  final int rating;
+  final String date;
+  final String time;
 
-  Widget _feedbackCard(Map<String, dynamic> data) {
-    final initials = data['name'][0];
-    final dateText = DateFormat('d MMM yyyy').format(data['date']);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2E2E38),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.accentBlue.withOpacity(0.2),
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: const TextStyle(
-                      color: AppColors.accentBlue,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data['name'],
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      dateText,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textMutedDark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Text(
-                data['time'],
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textMutedDark,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          Text(
-            data['message'],
-            style: const TextStyle(fontSize: 14, color: Colors.white),
-          ),
-
-          const SizedBox(height: 12),
-
-          // ⭐ YELLOW STARS
-          Row(
-            children: List.generate(5, (index) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: SvgPicture.asset(
-                  AppIcons.star,
-                  height: 16,
-                  color: index < data['rating']
-                      ? const Color(0xFFFFC107) // YELLOW
-                      : AppColors.textMutedDark,
-                ),
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
+  const _FeedbackUiModel({
+    required this.name,
+    required this.comment,
+    required this.rating,
+    required this.date,
+    required this.time,
+  });
 }

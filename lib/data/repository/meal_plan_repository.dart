@@ -1,42 +1,59 @@
+import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../models/meal_plan_model.dart';
-import '../store/meal_data_store.dart';
 import 'meal_repository.dart';
 
 class MealPlanRepository implements MealRepository {
-  static const _jsonAssetPath = 'lib/data/mock/meal_data.json';
+  static const _assetPath = 'assets/data/meal_data.json';
 
-  final MealDataStore _store = MealDataStore();
+  List<MealPlan> _plans = [];
   bool _initialized = false;
 
   Future<void> _initIfNeeded() async {
     if (_initialized) return;
 
-    final assetJson = await rootBundle.loadString(_jsonAssetPath);
-    await _store.initializeFromAssets(assetJson);
+    try {
+      final jsonString = await rootBundle.loadString(_assetPath);
+      final decoded = json.decode(jsonString) as Map<String, dynamic>;
 
-    _initialized = true;
+      final list = decoded['mealPlans'] as List<dynamic>;
+
+      _plans = list
+          .map((e) => MealPlan.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      _initialized = true;
+    } catch (e) {
+      /// 🔴 THIS was happening silently earlier
+      rethrow;
+    }
   }
 
   @override
   Future<List<MealPlan>> fetchMealPlans() async {
     await _initIfNeeded();
-    return _store.getMealPlans();
+    return List.unmodifiable(_plans);
   }
 
   @override
   Future<void> addMealPlan(MealPlan plan) async {
     await _initIfNeeded();
 
-    final withId = plan.copyWith(id: _store.getNextPlanId());
+    final nextId = _plans.isEmpty
+        ? 1
+        : _plans.map((e) => e.id).reduce((a, b) => a > b ? a : b) + 1;
 
-    await _store.addMealPlan(withId);
+    _plans.add(plan.copyWith(id: nextId));
   }
 
   @override
   Future<void> updateMealPlan(MealPlan plan) async {
     await _initIfNeeded();
-    await _store.updateMealPlan(plan);
+
+    final index = _plans.indexWhere((p) => p.id == plan.id);
+    if (index != -1) {
+      _plans[index] = plan;
+    }
   }
 }

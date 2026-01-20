@@ -10,6 +10,27 @@
     "Breakfast": 30,
     "Dinner": 80
   },
+  "feedback": {
+        "Breakfast": [
+          {
+            "rating": 4,
+            "comment": "Breakfast was tasty and fresh",
+            "date": "2026-01-20"
+          },
+          {
+            "rating": 5,
+            "comment": "Loved the poha",
+            "date": "2026-01-19"
+          }
+        ],
+        "Dinner": [
+          {
+            "rating": 3,
+            "comment": "Chicken was a bit oily",
+            "date": "2026-01-20"
+          }
+        ]
+      },
       "mealTrack": {
         "sun": {
           "Breakfast": { "veg": 12, "nonVeg": 8 },
@@ -79,6 +100,27 @@
     "Breakfast": 30,
     "Lunch": 80
   },
+  "feedback": {
+        "Breakfast": [
+          {
+            "rating": 2,
+            "comment": "Breakfast was not good",
+            "date": "2026-01-20"
+          },
+          {
+            "rating": 5,
+            "comment": "Loved the idli",
+            "date": "2026-01-19"
+          }
+        ],
+        "Lunch": [
+          {
+            "rating": 4,
+            "comment": "Paneer was decent",
+            "date": "2026-01-20"
+          }
+        ]
+      },
       "mealTrack": {
         "sun": {
           "Breakfast": { "veg": 12, "nonVeg": 8 },

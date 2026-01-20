@@ -1,27 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/models/meal_plan_model.dart';
-import '../../data/repository/meal_repository.dart';
 import 'meal_plan_event.dart';
 import 'meal_plan_state.dart';
+import '../../data/repository/meal_plan_repository.dart';
 
 class MealPlanBloc extends Bloc<MealPlanEvent, MealPlanState> {
-  final MealRepository repository;
+  final MealPlanRepository repository;
 
-  MealPlanBloc(this.repository) : super(MealPlanInitial()) {
+  MealPlanBloc(this.repository) : super(MealPlanLoading()) {
     on<LoadMealPlans>(_onLoadMealPlans);
     on<AddMealPlan>(_onAddMealPlan);
-    on<UpdateMealPlan>((event, emit) {
-      if (state is MealPlanLoaded) {
-        final current = (state as MealPlanLoaded).plans;
-
-        final updated = current.map((p) {
-          return p.id == event.plan.id ? event.plan : p;
-        }).toList();
-
-        emit(MealPlanLoaded(updated));
-      }
-    });
+    on<UpdateMealPlan>(_onUpdateMealPlan);
   }
 
   Future<void> _onLoadMealPlans(
@@ -29,10 +19,17 @@ class MealPlanBloc extends Bloc<MealPlanEvent, MealPlanState> {
     Emitter<MealPlanState> emit,
   ) async {
     emit(MealPlanLoading());
+
     try {
       final plans = await repository.fetchMealPlans();
+
+      /// 🔴 CRITICAL: empty list is STILL a valid loaded state
       emit(MealPlanLoaded(plans));
-    } catch (e) {
+    } catch (e, stack) {
+      /// 🔥 THIS was missing earlier
+      debugPrint('❌ LoadMealPlans failed: $e');
+      debugPrintStack(stackTrace: stack);
+
       emit(MealPlanError(e.toString()));
     }
   }
@@ -41,27 +38,25 @@ class MealPlanBloc extends Bloc<MealPlanEvent, MealPlanState> {
     AddMealPlan event,
     Emitter<MealPlanState> emit,
   ) async {
-    if (state is! MealPlanLoaded) return;
-
-    final currentPlans = (state as MealPlanLoaded).plans;
-
-    await repository.addMealPlan(event.plan);
-
-    final updatedPlans = await repository.fetchMealPlans();
-
-    emit(MealPlanLoaded(updatedPlans));
+    try {
+      await repository.addMealPlan(event.plan);
+      final plans = await repository.fetchMealPlans();
+      emit(MealPlanLoaded(plans));
+    } catch (e) {
+      emit(MealPlanError(e.toString()));
+    }
   }
 
   Future<void> _onUpdateMealPlan(
     UpdateMealPlan event,
     Emitter<MealPlanState> emit,
   ) async {
-    if (state is! MealPlanLoaded) return;
-
-    await repository.updateMealPlan(event.plan);
-
-    final updatedPlans = await repository.fetchMealPlans();
-
-    emit(MealPlanLoaded(updatedPlans));
+    try {
+      await repository.updateMealPlan(event.plan);
+      final plans = await repository.fetchMealPlans();
+      emit(MealPlanLoaded(plans));
+    } catch (e) {
+      emit(MealPlanError(e.toString()));
+    }
   }
 }
