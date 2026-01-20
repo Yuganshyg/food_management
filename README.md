@@ -1,16 +1,43 @@
-# food_management
 
-A new Flutter project.
+# Food Management – Flutter
 
-## Getting Started
+## Overview
+A Food Management module built using Flutter, strictly following the provided SVG/Figma UI.
+The app demonstrates clean architecture, BLoC state management, and JSON-based mock data.
 
-This project is a starting point for a Flutter application.
+## Features
+- Meal Plan creation & editing
+- Menu view with meals
+- Meal tracking (veg / non-veg counts)
+- Feedback module with SVG-matched UI
+- Dark mode support
+- JSON-based mock backend
 
-A few resources to get you started if this is your first Flutter project:
+## State Management
+BLoC pattern is used to:
+- Separate UI and business logic
+- Maintain scalability
+- Ensure predictable state changes
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Project Structure
+lib/
+ ├── bloc/
+ ├── data/
+ │   ├── models/
+ │   ├── repository/
+ ├── presentation/
+ │   ├── screens/
+ │   ├── widgets/
+ ├── core/
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Mock Data
+Data is loaded from:
+assets/data/meal_data.json
+
+## APK
+APK is available at the link provided below.
+
+## Notes
+- No backend is used (as per assignment)
+- All UI strictly follows provided SVG designs
+
