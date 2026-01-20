@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:food_management/core/constants/app_icons.dart';
+
+import '../../core/constants/app_colors.dart';
 import '../widgets/top_navigation_tabs.dart';
+
+// Screens
 import 'meal_plan_list_screen.dart';
 import 'menu_screen.dart';
 import 'meal_track_screen.dart';
 import 'feedback_screen.dart';
 import 'add_plan_screen.dart';
-import '../../core/constants/app_colors.dart';
 
 class FoodManagementHome extends StatefulWidget {
   const FoodManagementHome({super.key});
@@ -17,23 +22,25 @@ class FoodManagementHome extends StatefulWidget {
 class _FoodManagementHomeState extends State<FoodManagementHome> {
   int selectedIndex = 0;
 
+  bool get isMealPlanTab => selectedIndex == 0;
+  bool get isMenuTab => selectedIndex == 1;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isMealPlanTab = selectedIndex == 0;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            // ───────── SVG HEADER ─────────
+            // ───────── HEADER ─────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  /// BACK ICON (SVG LEFT ARROW STYLE)
+                  /// BACK ICON
                   const Icon(Icons.arrow_back, size: 20),
 
                   const SizedBox(width: 12),
@@ -48,7 +55,19 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
 
                   const Spacer(),
 
-                  /// ✅ SVG STYLE "+ Add Plan"
+                  /// ✅ FILTER ICON (ONLY MENU TAB)
+                  if (isMenuTab)
+                    GestureDetector(
+                      onTap: () {
+                        // TODO: open filter bottom sheet
+                      },
+                      child: SvgPicture.asset(AppIcons.slider, height: 28),
+                    ),
+
+                  /// spacing between filter and add plan (if both ever exist)
+                  if (isMenuTab) const SizedBox(width: 16),
+
+                  /// ✅ "+ Add Plan" (ONLY MEAL PLAN TAB)
                   if (isMealPlanTab)
                     GestureDetector(
                       onTap: () {
@@ -85,7 +104,7 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
               ),
             ),
 
-            /// ───────── TABS ─────────
+            // ───────── TABS ─────────
             TopNavigationTabs(
               selectedIndex: selectedIndex,
               onChanged: (index) {
@@ -95,7 +114,7 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
 
             Divider(height: 1, color: theme.dividerColor),
 
-            /// ───────── BODY ─────────
+            // ───────── BODY ─────────
             Expanded(
               child: IndexedStack(
                 index: selectedIndex,

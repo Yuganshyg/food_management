@@ -11,12 +11,15 @@ class DraftMapper {
       type: draft.type,
       startTime: draft.startTime,
       endTime: draft.endTime,
-      items: draft.items.map((e) => toMealItem(e)).toList(),
+      items: draft.items.map(toMealItem).toList(),
     );
   }
 
   static MealItem toMealItem(MealItemDraft draft) {
-    return MealItem(name: draft.controller.text, diet: draft.diet!);
+    return MealItem(
+      name: draft.controller.text.trim(),
+      diet: draft.diet ?? 'veg',
+    );
   }
 
   static MealPlan toMealPlan({
@@ -25,6 +28,7 @@ class DraftMapper {
     required String frequency,
     required int amount,
     required List<MealDraft> meals,
+    required Map<String, int> mealPrices,
   }) {
     return MealPlan(
       id: id,
@@ -32,6 +36,7 @@ class DraftMapper {
       frequency: frequency,
       amount: amount,
       selectedMeals: meals.map((e) => e.type).toList(),
+      mealPrices: mealPrices,
       meals: meals
           .asMap()
           .entries

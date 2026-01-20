@@ -15,4 +15,5 @@ class AppIcons {
   static const star = 'assets/icons/star.svg';
   static const plan = 'assets/icons/plan.svg';
   static const calendar = 'assets/icons/calendar.svg';
+  static const slider = 'assets/icons/slider.svg';
 }

@@ -5,53 +5,43 @@ import '../models/meal_plan_model.dart';
 import '../store/meal_data_store.dart';
 import 'meal_repository.dart';
 
-/// Repository that behaves like a real backend API
-/// - Loads JSON once
-/// - Uses in-memory store as source of truth
 class MealPlanRepository implements MealRepository {
-  static const _jsonPath = 'lib/data/mock/meal_data.json';
+  static const _jsonAssetPath = 'lib/data/mock/meal_data.json';
 
   final MealDataStore _store = MealDataStore();
-  bool _isInitialized = false;
+  bool _initialized = false;
 
-  /// Load JSON once and initialize store
-  Future<void> _initializeIfNeeded() async {
-    if (_isInitialized) return;
+  // ───────── INITIALIZE FROM ASSETS ─────────
+  Future<void> _initIfNeeded() async {
+    if (_initialized) return;
 
-    final String response = await rootBundle.loadString(_jsonPath);
-    final Map<String, dynamic> data = json.decode(response);
+    final assetJson = await rootBundle.loadString(_jsonAssetPath);
+    await _store.initializeFromAssets(assetJson);
 
-    final List plansJson = data['mealPlans'];
-
-    final plans = plansJson
-        .map<MealPlan>((json) => MealPlan.fromJson(json))
-        .toList();
-
-    _store.initialize(plans);
-    _isInitialized = true;
+    _initialized = true;
   }
 
-  /// READ – Fetch meal plans
+  // ───────── READ ─────────
   @override
   Future<List<MealPlan>> fetchMealPlans() async {
-    await _initializeIfNeeded();
+    await _initIfNeeded();
     return _store.getMealPlans();
   }
 
-  /// WRITE – Add new meal plan
+  // ───────── CREATE ─────────
   @override
   Future<void> addMealPlan(MealPlan plan) async {
-    await _initializeIfNeeded();
+    await _initIfNeeded();
 
-    final newPlan = plan.copyWith(id: _store.getNextPlanId());
+    final withId = plan.copyWith(id: _store.getNextPlanId());
 
-    _store.addMealPlan(newPlan);
+    _store.addMealPlan(withId);
   }
 
-  /// WRITE – Update existing plan
+  // ───────── UPDATE ─────────
   @override
   Future<void> updateMealPlan(MealPlan plan) async {
-    await _initializeIfNeeded();
+    await _initIfNeeded();
     _store.updateMealPlan(plan);
   }
 }

@@ -1,21 +1,36 @@
-import 'package:food_management/data/draft/meal_item_draft.dart';
+import 'meal_item_draft.dart';
 
 class MealDraft {
   final String type;
-  String? startTime;
-  String? endTime;
+
+  /// ⏱ Timing
+  String startTime;
+  String endTime;
+
+  /// 💰 Price per meal (REQUIRED)
+  int price;
+
+  /// 🍽 Items
   final List<MealItemDraft> items;
 
   MealDraft({
     required this.type,
-    this.startTime,
-    this.endTime,
+    this.startTime = '',
+    this.endTime = '',
+    this.price = 0,
     required this.items,
   });
 
-  bool get hasValidTime => startTime != null && endTime != null;
+  /// ✅ Validation for Set Plan screen
+  bool get isValid {
+    if (startTime.isEmpty || endTime.isEmpty) return false;
+    if (items.isEmpty) return false;
 
-  bool get hasValidItems => items.any((item) => item.isValid);
+    for (final item in items) {
+      if (item.controller.text.trim().isEmpty) return false;
+      if (item.diet == null) return false;
+    }
 
-  bool get isValid => hasValidTime && hasValidItems;
+    return true;
+  }
 }

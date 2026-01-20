@@ -1,45 +1,62 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
+
 import '../models/meal_plan_model.dart';
 
-/// In-memory data store
-/// Acts like a backend database during app runtime
 class MealDataStore {
-  /// Singleton instance
-  MealDataStore._internal();
-  static final MealDataStore _instance = MealDataStore._internal();
-  factory MealDataStore() => _instance;
+  static const _fileName = 'meal_data.json';
 
-  /// Internal storage
-  final List<MealPlan> _mealPlans = [];
+  List<MealPlan> _plans = [];
 
-  /// Initialize store with JSON data (called once)
-  void initialize(List<MealPlan> plans) {
-    _mealPlans
-      ..clear()
-      ..addAll(plans);
+  /// Load from local file OR create from assets
+  Future<void> initializeFromAssets(String assetJson) async {
+    final file = await _localFile;
+
+    if (!await file.exists()) {
+      // First launch → create local copy
+      await file.writeAsString(assetJson);
+    }
+
+    final content = await file.readAsString();
+    final decoded = json.decode(content);
+
+    _plans = (decoded['mealPlans'] as List)
+        .map((e) => MealPlan.fromJson(e))
+        .toList();
   }
 
-  /// Read all meal plans
-  List<MealPlan> getMealPlans() {
-    return List.unmodifiable(_mealPlans);
+  List<MealPlan> getMealPlans() => List.unmodifiable(_plans);
+
+  int getNextPlanId() => _plans.isEmpty
+      ? 1
+      : _plans.map((e) => e.id).reduce((a, b) => a > b ? a : b) + 1;
+
+  Future<void> addMealPlan(MealPlan plan) async {
+    _plans.add(plan);
+    await _persist();
   }
 
-  /// Add a new meal plan
-  void addMealPlan(MealPlan plan) {
-    _mealPlans.add(plan);
-  }
-
-  /// Update existing meal plan
-  void updateMealPlan(MealPlan updatedPlan) {
-    final index = _mealPlans.indexWhere((plan) => plan.id == updatedPlan.id);
-
+  Future<void> updateMealPlan(MealPlan plan) async {
+    final index = _plans.indexWhere((p) => p.id == plan.id);
     if (index != -1) {
-      _mealPlans[index] = updatedPlan;
+      _plans[index] = plan;
+      await _persist();
     }
   }
 
-  /// Get next plan ID (simulates auto-increment DB)
-  int getNextPlanId() {
-    if (_mealPlans.isEmpty) return 1;
-    return _mealPlans.map((e) => e.id).reduce((a, b) => a > b ? a : b) + 1;
+  /// WRITE BACK TO FILE
+  Future<void> _persist() async {
+    final file = await _localFile;
+
+    final data = {'mealPlans': _plans.map((e) => e.toJson()).toList()};
+
+    await file.writeAsString(json.encode(data), flush: true);
+  }
+
+  Future<File> get _localFile async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/$_fileName');
   }
 }

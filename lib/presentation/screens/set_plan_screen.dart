@@ -12,8 +12,9 @@ import '../widgets/meal_setup_card.dart';
 
 class SetPlanScreen extends StatefulWidget {
   final MealPlan draftPlan;
+  final MealPlan? existingPlan; // 🔑 EDIT MODE FLAG
 
-  const SetPlanScreen({super.key, required this.draftPlan});
+  const SetPlanScreen({super.key, required this.draftPlan, this.existingPlan});
 
   @override
   State<SetPlanScreen> createState() => _SetPlanScreenState();
@@ -27,6 +28,7 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
   @override
   void initState() {
     super.initState();
+
     mealDrafts = widget.draftPlan.selectedMeals
         .map((type) => MealDraft(type: type, items: [MealItemDraft()]))
         .toList();
@@ -37,26 +39,37 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
+
     if (picked == null) return;
 
     setState(() {
       final formatted = picked.format(context);
-      isStart
-          ? mealDrafts[index].startTime = formatted
-          : mealDrafts[index].endTime = formatted;
+      if (isStart) {
+        mealDrafts[index].startTime = formatted;
+      } else {
+        mealDrafts[index].endTime = formatted;
+      }
     });
   }
 
   void _savePlan() {
     final finalPlan = DraftMapper.toMealPlan(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: widget.existingPlan?.id ?? DateTime.now().millisecondsSinceEpoch,
       name: widget.draftPlan.name,
       frequency: widget.draftPlan.frequency,
       amount: widget.draftPlan.amount,
       meals: mealDrafts,
+      mealPrices: widget.draftPlan.mealPrices,
     );
 
-    context.read<MealPlanBloc>().add(AddMealPlan(finalPlan));
+    final bloc = context.read<MealPlanBloc>();
+
+    if (widget.existingPlan != null) {
+      bloc.add(UpdateMealPlan(finalPlan)); // 🔁 UPDATE
+    } else {
+      bloc.add(AddMealPlan(finalPlan)); // ➕ ADD
+    }
+
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
@@ -80,13 +93,19 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
                     onTimePickStart: () => _pickTime(index, true),
                     onTimePickEnd: () => _pickTime(index, false),
                     onAddDish: () {
-                      setState(() => meal.items.add(MealItemDraft()));
+                      setState(() {
+                        meal.items.add(MealItemDraft());
+                      });
                     },
-                    onRemoveDish: (i) {
-                      setState(() => meal.items.removeAt(i));
+                    onRemoveDish: (dishIndex) {
+                      setState(() {
+                        meal.items.removeAt(dishIndex);
+                      });
                     },
-                    onDietChanged: (i, diet) {
-                      setState(() => meal.items[i].diet = diet);
+                    onDietChanged: (dishIndex, diet) {
+                      setState(() {
+                        meal.items[dishIndex].diet = diet;
+                      });
                     },
                   );
                 },
@@ -113,7 +132,7 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isFormValid
                         ? AppColors.accentBlue
-                        : Colors.grey.shade400,
+                        : AppColors.textMutedDark,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),

@@ -11,7 +11,17 @@ class MealPlanBloc extends Bloc<MealPlanEvent, MealPlanState> {
   MealPlanBloc(this.repository) : super(MealPlanInitial()) {
     on<LoadMealPlans>(_onLoadMealPlans);
     on<AddMealPlan>(_onAddMealPlan);
-    on<UpdateMealPlan>(_onUpdateMealPlan);
+    on<UpdateMealPlan>((event, emit) {
+      if (state is MealPlanLoaded) {
+        final current = (state as MealPlanLoaded).plans;
+
+        final updated = current.map((p) {
+          return p.id == event.plan.id ? event.plan : p;
+        }).toList();
+
+        emit(MealPlanLoaded(updated));
+      }
+    });
   }
 
   Future<void> _onLoadMealPlans(

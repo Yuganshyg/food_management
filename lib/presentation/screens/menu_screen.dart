@@ -9,6 +9,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_icons.dart';
 import '../../data/models/meal_model.dart';
 import '../../data/models/meal_plan_model.dart';
+import 'add_plan_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
@@ -18,27 +19,32 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  int selectedDayIndex = DateTime.now().weekday % 7;
+  late int selectedDayIndex;
   int selectedPlanIndex = 0;
 
-  final expandedIndex = ValueNotifier<int?>(0);
-  final weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  final expandedIndex = ValueNotifier<int?>(null);
+  final weekDays = const ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  // ───────── DROPDOWN STATE ─────────
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
   bool isDropdownOpen = false;
 
   @override
+  void initState() {
+    super.initState();
+    selectedDayIndex = DateTime.now().weekday % 7;
+  }
+
+  @override
   void dispose() {
-    _removeDropdown();
     expandedIndex.dispose();
+    _removeDropdown();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final dateText = DateFormat('d MMMM').format(DateTime.now());
-
     return BlocBuilder<MealPlanBloc, MealPlanState>(
       builder: (context, state) {
         if (state is! MealPlanLoaded || state.plans.isEmpty) {
@@ -48,18 +54,28 @@ class _MenuScreenState extends State<MenuScreen> {
         final plans = state.plans;
         final selectedPlan = plans[selectedPlanIndex];
 
+        // Date calculation
+        final today = DateTime.now();
+        final currentWeekdayIndex = today.weekday % 7;
+        final difference = selectedDayIndex - currentWeekdayIndex;
+        final selectedDate = today.add(Duration(days: difference));
+        final dateText = DateFormat('d MMMM').format(selectedDate);
+
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _topRow(plans, selectedPlan),
+
               const SizedBox(height: 16),
 
               _weekStrip(),
+
               const SizedBox(height: 12),
 
               _dateChip(dateText),
+
               const SizedBox(height: 20),
 
               _mealList(selectedPlan),
@@ -70,7 +86,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // ---------------- TOP ROW ----------------
+  // ───────── TOP ROW (PLAN DROPDOWN) ─────────
 
   Widget _topRow(List<MealPlan> plans, MealPlan selectedPlan) {
     return Row(
@@ -79,11 +95,7 @@ class _MenuScreenState extends State<MenuScreen> {
           link: _layerLink,
           child: GestureDetector(
             onTap: () {
-              if (isDropdownOpen) {
-                _removeDropdown();
-              } else {
-                _showDropdown(plans);
-              }
+              isDropdownOpen ? _removeDropdown() : _showDropdown(plans);
             },
             child: Container(
               height: 48,
@@ -91,33 +103,41 @@ class _MenuScreenState extends State<MenuScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.textMutedDark),
-                color: const Color(0xFF1E1E1E),
               ),
               child: Row(
                 children: [
-                  Text(
-                    selectedPlan.name,
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                  Text(selectedPlan.name),
                   const SizedBox(width: 8),
                   Icon(
                     isDropdownOpen
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: Colors.white,
                   ),
                 ],
               ),
             ),
           ),
         ),
+
         const Spacer(),
-        const Icon(Icons.edit_square, color: Colors.white, size: 22),
+
+        // EDIT BUTTON
+        IconButton(
+          icon: const Icon(Icons.edit_square),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AddPlanScreen(existingPlan: selectedPlan),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
 
-  // ---------------- DROPDOWN OVERLAY ----------------
+  // ───────── DROPDOWN OVERLAY ─────────
 
   void _showDropdown(List<MealPlan> plans) {
     _overlayEntry = OverlayEntry(
@@ -130,8 +150,9 @@ class _MenuScreenState extends State<MenuScreen> {
             color: Colors.transparent,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF2B2B2B),
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.textMutedDark),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -151,10 +172,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                       child: Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(
-                          plans[index].name,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        child: Text(plans[index].name),
                       ),
                     ),
                   );
@@ -176,7 +194,7 @@ class _MenuScreenState extends State<MenuScreen> {
     setState(() => isDropdownOpen = false);
   }
 
-  // ---------------- WEEK STRIP ----------------
+  // ───────── WEEK STRIP ─────────
 
   Widget _weekStrip() {
     return Container(
@@ -220,7 +238,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // ---------------- DATE CHIP ----------------
+  // ───────── DATE CHIP ─────────
 
   Widget _dateChip(String date) {
     return Container(
@@ -233,7 +251,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // ---------------- MEALS ----------------
+  // ───────── MEAL LIST ─────────
 
   Widget _mealList(MealPlan plan) {
     return Column(

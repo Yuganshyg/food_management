@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_icons.dart';
 import '../../data/models/meal_plan_model.dart';
 import 'set_plan_screen.dart';
 
 class AddPlanScreen extends StatefulWidget {
-  const AddPlanScreen({super.key});
+  final MealPlan? existingPlan;
+
+  const AddPlanScreen({super.key, this.existingPlan});
 
   @override
   State<AddPlanScreen> createState() => _AddPlanScreenState();
 }
 
 class _AddPlanScreenState extends State<AddPlanScreen> {
-  // ───────── CONTROLLERS ─────────
   final TextEditingController planNameController = TextEditingController();
 
   bool showBreakdown = true;
+
+  /// 🔒 MUST always be one of these values
+  static const List<String> _frequencies = ['Daily', 'Weekly', 'Monthly'];
+
   String frequency = 'Monthly';
 
   final Map<String, TextEditingController> priceControllers = {
@@ -26,10 +32,45 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     'Dinner': TextEditingController(text: '80'),
   };
 
-  final Set<String> selectedMeals = {'Breakfast', 'Lunch', 'Snacks', 'Dinner'};
+  final Set<String> selectedMeals = {};
 
-  // ───────── CALCULATION ─────────
-  int get multiplier {
+  // ───────── INIT (CREATE + EDIT MODE) ─────────
+  @override
+  void initState() {
+    super.initState();
+
+    final plan = widget.existingPlan;
+
+    if (plan != null) {
+      /// EDIT MODE
+      planNameController.text = plan.name;
+
+      /// 🔑 NORMALIZE FREQUENCY (FIX)
+      final normalized =
+          '${plan.frequency[0].toUpperCase()}${plan.frequency.substring(1).toLowerCase()}';
+
+      frequency = _frequencies.contains(normalized) ? normalized : 'Monthly';
+
+      /// Prefill selected meals
+      if (plan.selectedMeals.isNotEmpty) {
+        selectedMeals.addAll(plan.selectedMeals);
+      } else {
+        selectedMeals.addAll(priceControllers.keys);
+      }
+
+      /// Prefill prices if available
+      plan.mealPrices.forEach((meal, price) {
+        if (priceControllers.containsKey(meal)) {
+          priceControllers[meal]!.text = price.toString();
+        }
+      });
+    } else {
+      /// CREATE MODE
+      selectedMeals.addAll(priceControllers.keys);
+    }
+  }
+
+  int get _multiplier {
     switch (frequency) {
       case 'Daily':
         return 1;
@@ -44,13 +85,11 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
   int get totalAmount {
     int sum = 0;
     for (final meal in selectedMeals) {
-      final value = int.tryParse(priceControllers[meal]!.text) ?? 0;
-      sum += value;
+      sum += int.tryParse(priceControllers[meal]?.text ?? '0') ?? 0;
     }
-    return sum * multiplier;
+    return sum * _multiplier;
   }
 
-  // ───────── NAVIGATION ─────────
   void _continue() {
     final draft = MealPlan.draft(
       name: planNameController.text.trim().isEmpty
@@ -59,11 +98,20 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
       frequency: frequency,
       amount: totalAmount,
       selectedMeals: selectedMeals.toList(),
+      mealPrices: {
+        for (final m in selectedMeals)
+          m: int.tryParse(priceControllers[m]?.text ?? '0') ?? 0,
+      },
     );
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => SetPlanScreen(draftPlan: draft)),
+      MaterialPageRoute(
+        builder: (_) => SetPlanScreen(
+          draftPlan: draft,
+          existingPlan: widget.existingPlan, // 🔑 PASS IT
+        ),
+      ),
     );
   }
 
@@ -81,7 +129,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // ───────── PLAN NAME (SVG STYLE) ─────────
                   _card(
                     child: Row(
                       children: [
@@ -90,14 +137,9 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                         Expanded(
                           child: TextField(
                             controller: planNameController,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
                             decoration: const InputDecoration(
                               hintText: 'Enter plan name',
                               border: InputBorder.none,
-                              isDense: true,
                             ),
                           ),
                         ),
@@ -107,27 +149,18 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                   const SizedBox(height: 20),
 
-                  // ───────── TOGGLE ─────────
                   Row(
                     children: [
-                      const Text(
-                        'Show price breakdown per meal',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                      const Text('Show price breakdown per meal'),
                       const Spacer(),
                       Switch(
                         value: showBreakdown,
                         activeColor: AppColors.accentBlue,
-                        onChanged: (v) {
-                          setState(() => showBreakdown = v);
-                        },
+                        onChanged: (v) => setState(() => showBreakdown = v),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 12),
-
-                  // ───────── MEAL BREAKDOWN ─────────
                   if (showBreakdown)
                     _card(
                       child: Column(
@@ -159,11 +192,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                                     textAlign: TextAlign.center,
                                     decoration: InputDecoration(
                                       prefixText: '₹ ',
-                                      isDense: true,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            vertical: 10,
-                                          ),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
@@ -180,7 +208,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ───────── TOTAL AMOUNT ─────────
                   _card(
                     child: Row(
                       children: [
@@ -199,7 +226,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
                   const SizedBox(height: 16),
 
-                  // ───────── FREQUENCY DROPDOWN ─────────
                   _card(
                     child: Row(
                       children: [
@@ -210,23 +236,15 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
                             child: DropdownButton<String>(
                               value: frequency,
                               isExpanded: true,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'Daily',
-                                  child: Text('Daily'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'Weekly',
-                                  child: Text('Weekly'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'Monthly',
-                                  child: Text('Monthly'),
-                                ),
-                              ],
-                              onChanged: (v) {
-                                setState(() => frequency = v!);
-                              },
+                              items: _frequencies
+                                  .map(
+                                    (f) => DropdownMenuItem(
+                                      value: f,
+                                      child: Text(f),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) => setState(() => frequency = v!),
                             ),
                           ),
                         ),
@@ -237,7 +255,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
               ),
             ),
 
-            // ───────── SAVE BUTTON ─────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
               child: SizedBox(
@@ -264,7 +281,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     );
   }
 
-  // ───────── CARD WIDGET ─────────
   Widget _card({required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(14),

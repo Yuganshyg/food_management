@@ -3,43 +3,55 @@ import 'meal_model.dart';
 class MealPlan {
   final int id;
   final String name;
-  final String frequency;
+  final String frequency; // Daily / Weekly / Monthly
   final int amount;
 
+  /// Selected meal types
   final List<String> selectedMeals;
+
+  /// Price per meal (Breakfast → 30 etc)
+  final Map<String, int> mealPrices;
+
+  /// Fully configured meals
   final List<Meal> meals;
 
-  MealPlan({
+  const MealPlan({
     required this.id,
     required this.name,
     required this.frequency,
     required this.amount,
     required this.selectedMeals,
+    required this.mealPrices,
     required this.meals,
   });
 
+  // ───────── DRAFT (AddPlan → SetPlan) ─────────
   factory MealPlan.draft({
     required String name,
     required String frequency,
     required int amount,
     required List<String> selectedMeals,
+    required Map<String, int> mealPrices,
   }) {
     return MealPlan(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: -1, // temporary
       name: name,
       frequency: frequency,
       amount: amount,
       selectedMeals: selectedMeals,
+      mealPrices: mealPrices,
       meals: const [],
     );
   }
 
+  // ───────── COPY WITH (FIXES UPDATE BUG) ─────────
   MealPlan copyWith({
     int? id,
     String? name,
     String? frequency,
     int? amount,
     List<String>? selectedMeals,
+    Map<String, int>? mealPrices,
     List<Meal>? meals,
   }) {
     return MealPlan(
@@ -48,20 +60,21 @@ class MealPlan {
       frequency: frequency ?? this.frequency,
       amount: amount ?? this.amount,
       selectedMeals: selectedMeals ?? this.selectedMeals,
+      mealPrices: mealPrices ?? this.mealPrices,
       meals: meals ?? this.meals,
     );
   }
 
+  // ───────── JSON ─────────
   factory MealPlan.fromJson(Map<String, dynamic> json) {
     return MealPlan(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      frequency: json['frequency'] as String,
-      amount: json['amount'] as int,
+      id: json['id'],
+      name: json['name'],
+      frequency: json['frequency'],
+      amount: json['amount'],
       selectedMeals: List<String>.from(json['selectedMeals'] ?? const []),
-      meals: (json['meals'] as List)
-          .map((e) => Meal.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      mealPrices: Map<String, int>.from(json['mealPrices'] ?? {}),
+      meals: (json['meals'] as List).map((e) => Meal.fromJson(e)).toList(),
     );
   }
 
@@ -72,6 +85,7 @@ class MealPlan {
       'frequency': frequency,
       'amount': amount,
       'selectedMeals': selectedMeals,
+      'mealPrices': mealPrices,
       'meals': meals.map((e) => e.toJson()).toList(),
     };
   }
