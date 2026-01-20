@@ -3,14 +3,11 @@ import 'meal_item_draft.dart';
 class MealDraft {
   final String type;
 
-  /// ⏱ Timing
   String startTime;
   String endTime;
 
-  /// 💰 Price per meal (REQUIRED)
   int price;
 
-  /// 🍽 Items
   final List<MealItemDraft> items;
 
   MealDraft({
@@ -21,7 +18,6 @@ class MealDraft {
     required this.items,
   });
 
-  /// ✅ Validation for Set Plan screen
   bool get isValid {
     if (startTime.isEmpty || endTime.isEmpty) return false;
     if (items.isEmpty) return false;

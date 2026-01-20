@@ -10,10 +10,8 @@ class MealPlan {
   final Map<String, int> mealPrices;
   final List<Meal> meals;
 
-  /// day -> meal -> { veg, nonVeg }
   final Map<String, Map<String, Map<String, int>>> mealTrack;
 
-  /// meal -> feedback list
   final Map<String, List<FeedbackItem>> feedback;
 
   MealPlan({
@@ -28,9 +26,6 @@ class MealPlan {
     required this.feedback,
   });
 
-  // ─────────────────────────────────────────────
-  // DRAFT CONSTRUCTOR (FIXES AddPlanScreen)
-  // ─────────────────────────────────────────────
   factory MealPlan.draft({
     required String name,
     required String frequency,
@@ -51,9 +46,6 @@ class MealPlan {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // COPY WITH (FIXES Repository)
-  // ─────────────────────────────────────────────
   MealPlan copyWith({
     int? id,
     String? name,
@@ -78,9 +70,6 @@ class MealPlan {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // FROM JSON (FIXES LOADER CRASH)
-  // ─────────────────────────────────────────────
   factory MealPlan.fromJson(Map<String, dynamic> json) {
     return MealPlan(
       id: json['id'],
@@ -107,9 +96,6 @@ class MealPlan {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // TO JSON (FIXES SAVE / PERSIST)
-  // ─────────────────────────────────────────────
   Map<String, dynamic> toJson() {
     return {
       'id': id,

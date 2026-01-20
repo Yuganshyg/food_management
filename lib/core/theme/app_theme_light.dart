@@ -5,9 +5,8 @@ class AppThemeLight {
     return ThemeData(
       brightness: Brightness.light,
 
-      // PRIMARY COLORS (from Light SVG)
       colorScheme: const ColorScheme.light(
-        primary: Color(0xFF4DA3FF), // SVG blue
+        primary: Color(0xFF4DA3FF),
         secondary: Color(0xFF4DA3FF),
         background: Color(0xFFFFFFFF),
         surface: Color(0xFFF5F5F5),
@@ -15,16 +14,12 @@ class AppThemeLight {
 
       scaffoldBackgroundColor: const Color(0xFFFFFFFF),
 
-      // CARD COLORS
       cardColor: const Color(0xFFF5F5F5),
 
-      // DIVIDER / BORDER
       dividerColor: const Color(0xFFE0E0E0),
 
-      // ICON THEME
       iconTheme: const IconThemeData(color: Color(0xFF1F1F1F)),
 
-      // TEXT THEME
       textTheme: const TextTheme(
         bodyLarge: TextStyle(color: Color(0xFF1F1F1F), fontSize: 16),
         bodyMedium: TextStyle(color: Color(0xFF3C3C3C), fontSize: 14),
@@ -36,7 +31,6 @@ class AppThemeLight {
         ),
       ),
 
-      // APPBAR
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFFFFFFFF),
         elevation: 0,
@@ -48,7 +42,6 @@ class AppThemeLight {
         ),
       ),
 
-      // INPUTS
       inputDecorationTheme: const InputDecorationTheme(
         border: UnderlineInputBorder(),
       ),

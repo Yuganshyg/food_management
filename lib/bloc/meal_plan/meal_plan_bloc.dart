@@ -22,12 +22,9 @@ class MealPlanBloc extends Bloc<MealPlanEvent, MealPlanState> {
 
     try {
       final plans = await repository.fetchMealPlans();
-
-      /// 🔴 CRITICAL: empty list is STILL a valid loaded state
       emit(MealPlanLoaded(plans));
     } catch (e, stack) {
-      /// 🔥 THIS was missing earlier
-      debugPrint('❌ LoadMealPlans failed: $e');
+      debugPrint('LoadMealPlans failed: $e');
       debugPrintStack(stackTrace: stack);
 
       emit(MealPlanError(e.toString()));

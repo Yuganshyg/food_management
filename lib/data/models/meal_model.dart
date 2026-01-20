@@ -2,7 +2,7 @@ import 'meal_item_model.dart';
 
 class Meal {
   final int id;
-  final String type; // Breakfast, Lunch, Snacks, Dinner
+  final String type;
   final String? startTime;
   final String? endTime;
   final List<MealItem> items;
@@ -15,7 +15,6 @@ class Meal {
     required this.items,
   });
 
-  // ---------- COPY ----------
   Meal copyWith({
     int? id,
     String? type,
@@ -32,7 +31,6 @@ class Meal {
     );
   }
 
-  // ---------- JSON ----------
   factory Meal.fromJson(Map<String, dynamic> json) {
     return Meal(
       id: json['id'] as int,

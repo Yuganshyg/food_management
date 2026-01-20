@@ -15,7 +15,6 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   String selectedMeal = 'Breakfast';
 
-  /// SVG meal tabs
   final meals = const [
     ('Breakfast', Icons.free_breakfast),
     ('Lunch', Icons.restaurant),
@@ -23,7 +22,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     ('Dinner', Icons.dinner_dining),
   ];
 
-  /// 🔒 SVG DUMMY DATA (used if JSON data missing)
   final Map<String, List<_FeedbackUiModel>> dummyFeedback = {
     'Breakfast': [
       _FeedbackUiModel(
@@ -60,14 +58,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Widget build(BuildContext context) {
     return BlocBuilder<MealPlanBloc, MealPlanState>(
       builder: (context, state) {
-        // 🔒 Always render UI (no loader block)
         final feedbackList = dummyFeedback[selectedMeal] ?? [];
 
         return Column(
           children: [
             const SizedBox(height: 12),
 
-            // ───────── MEAL TABS (SVG MATCH) ─────────
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -128,7 +124,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
             const SizedBox(height: 20),
 
-            // ───────── FEEDBACK LIST ─────────
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -150,7 +145,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ─── HEADER ───
                         Row(
                           children: [
                             CircleAvatar(
@@ -205,7 +199,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
                         const SizedBox(height: 12),
 
-                        // ─── COMMENT ───
                         Text(
                           feedback.comment,
                           style: const TextStyle(
@@ -216,8 +209,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                         ),
 
                         const SizedBox(height: 12),
-
-                        // ─── STARS (YELLOW, SVG MATCH) ───
                         Row(
                           children: List.generate(5, (i) {
                             return Icon(
@@ -242,7 +233,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 }
 
-/// 🔒 UI-ONLY MODEL (DO NOT CONNECT TO DATA LAYER)
 class _FeedbackUiModel {
   final String name;
   final String comment;

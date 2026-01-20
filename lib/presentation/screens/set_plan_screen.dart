@@ -73,8 +73,6 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
       meals: mealDrafts,
       mealPrices: widget.draftPlan.mealPrices,
       mealTrack: widget.existingPlan?.mealTrack ?? _initialMealTrack(),
-
-      /// ✅ FIX: feedback ALWAYS PASSED
       feedback: widget.existingPlan?.feedback ?? {},
     );
 
@@ -117,8 +115,6 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
                 },
               ),
             ),
-
-            /// SAVE BUTTON (UNCHANGED)
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               child: SizedBox(

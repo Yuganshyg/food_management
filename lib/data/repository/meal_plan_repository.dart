@@ -25,7 +25,6 @@ class MealPlanRepository implements MealRepository {
 
       _initialized = true;
     } catch (e) {
-      /// 🔴 THIS was happening silently earlier
       rethrow;
     }
   }

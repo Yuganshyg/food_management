@@ -9,7 +9,6 @@ class FeedbackItem {
     required this.date,
   });
 
-  // ───────── FROM JSON ─────────
   factory FeedbackItem.fromJson(Map<String, dynamic> json) {
     return FeedbackItem(
       rating: json['rating'],
@@ -18,7 +17,6 @@ class FeedbackItem {
     );
   }
 
-  // ───────── TO JSON (FIX) ─────────
   Map<String, dynamic> toJson() {
     return {'rating': rating, 'comment': comment, 'date': date};
   }

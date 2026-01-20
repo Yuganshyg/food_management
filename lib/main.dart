@@ -19,19 +19,14 @@ class FoodManagementApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    /// 🔑 SINGLE repository instance (important for physical device)
     final mealPlanRepository = MealPlanRepository();
 
     return MultiBlocProvider(
       providers: [
-        /// Theme cubit (system theme driven)
         BlocProvider(create: (_) => ThemeCubit()),
 
-        /// Meal plan bloc (global)
         BlocProvider(
-          create: (_) =>
-              MealPlanBloc(mealPlanRepository)
-                ..add(LoadMealPlans()), // ✅ REQUIRED
+          create: (_) => MealPlanBloc(mealPlanRepository)..add(LoadMealPlans()),
         ),
       ],
       child: BlocBuilder<ThemeCubit, ThemeState>(
@@ -40,11 +35,9 @@ class FoodManagementApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'Food Management',
 
-            /// Light & Dark themes (SVG based)
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
 
-            /// 🔑 Follow system theme
             themeMode: ThemeMode.system,
 
             home: const FoodManagementHome(),

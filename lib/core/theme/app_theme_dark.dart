@@ -5,9 +5,8 @@ class AppThemeDark {
     return ThemeData(
       brightness: Brightness.dark,
 
-      // PRIMARY COLORS (from Dark SVG)
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFF4DA3FF), // Same SVG blue
+        primary: Color(0xFF4DA3FF),
         secondary: Color(0xFF4DA3FF),
         background: Color(0xFF0F0F0F),
         surface: Color(0xFF2E2E38),
@@ -15,16 +14,12 @@ class AppThemeDark {
 
       scaffoldBackgroundColor: const Color(0xFF0F0F0F),
 
-      // CARD COLORS
       cardColor: const Color(0xFF2E2E38),
 
-      // DIVIDER / BORDER
       dividerColor: const Color(0xFF3A3A3A),
 
-      // ICON THEME
       iconTheme: const IconThemeData(color: Colors.white),
 
-      // TEXT THEME
       textTheme: const TextTheme(
         bodyLarge: TextStyle(color: Colors.white, fontSize: 16),
         bodyMedium: TextStyle(color: Color(0xFFD0D0D0), fontSize: 14),
@@ -36,7 +31,6 @@ class AppThemeDark {
         ),
       ),
 
-      // APPBAR
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF0F0F0F),
         elevation: 0,
@@ -48,7 +42,6 @@ class AppThemeDark {
         ),
       ),
 
-      // INPUTS
       inputDecorationTheme: const InputDecorationTheme(
         border: UnderlineInputBorder(),
       ),

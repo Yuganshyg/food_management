@@ -4,8 +4,6 @@ import 'package:food_management/core/constants/app_icons.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../widgets/top_navigation_tabs.dart';
-
-// Screens
 import 'meal_plan_list_screen.dart';
 import 'menu_screen.dart';
 import 'meal_track_screen.dart';
@@ -34,18 +32,14 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
       body: SafeArea(
         child: Column(
           children: [
-            // ───────── HEADER ─────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  /// BACK ICON
                   const Icon(Icons.arrow_back, size: 20),
 
                   const SizedBox(width: 12),
-
-                  /// TITLE
                   Text(
                     'Food Management',
                     style: theme.textTheme.titleLarge?.copyWith(
@@ -55,19 +49,14 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
 
                   const Spacer(),
 
-                  /// ✅ FILTER ICON (ONLY MENU TAB)
                   if (isMenuTab)
                     GestureDetector(
-                      onTap: () {
-                        // TODO: open filter bottom sheet
-                      },
+                      onTap: () {},
                       child: SvgPicture.asset(AppIcons.slider, height: 28),
                     ),
 
-                  /// spacing between filter and add plan (if both ever exist)
                   if (isMenuTab) const SizedBox(width: 16),
 
-                  /// ✅ "+ Add Plan" (ONLY MEAL PLAN TAB)
                   if (isMealPlanTab)
                     GestureDetector(
                       onTap: () {
@@ -104,7 +93,6 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
               ),
             ),
 
-            // ───────── TABS ─────────
             TopNavigationTabs(
               selectedIndex: selectedIndex,
               onChanged: (index) {
@@ -114,7 +102,6 @@ class _FoodManagementHomeState extends State<FoodManagementHome> {
 
             Divider(height: 1, color: theme.dividerColor),
 
-            // ───────── BODY ─────────
             Expanded(
               child: IndexedStack(
                 index: selectedIndex,

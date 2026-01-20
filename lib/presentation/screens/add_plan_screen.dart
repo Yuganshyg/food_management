@@ -20,7 +20,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
   bool showBreakdown = true;
 
-  /// 🔒 MUST always be one of these values
   static const List<String> _frequencies = ['Daily', 'Weekly', 'Monthly'];
 
   String frequency = 'Monthly';
@@ -34,7 +33,6 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
 
   final Set<String> selectedMeals = {};
 
-  // ───────── INIT (CREATE + EDIT MODE) ─────────
   @override
   void initState() {
     super.initState();
@@ -42,30 +40,25 @@ class _AddPlanScreenState extends State<AddPlanScreen> {
     final plan = widget.existingPlan;
 
     if (plan != null) {
-      /// EDIT MODE
       planNameController.text = plan.name;
 
-      /// 🔑 NORMALIZE FREQUENCY (FIX)
       final normalized =
           '${plan.frequency[0].toUpperCase()}${plan.frequency.substring(1).toLowerCase()}';
 
       frequency = _frequencies.contains(normalized) ? normalized : 'Monthly';
 
-      /// Prefill selected meals
       if (plan.selectedMeals.isNotEmpty) {
         selectedMeals.addAll(plan.selectedMeals);
       } else {
         selectedMeals.addAll(priceControllers.keys);
       }
 
-      /// Prefill prices if available
       plan.mealPrices.forEach((meal, price) {
         if (priceControllers.containsKey(meal)) {
           priceControllers[meal]!.text = price.toString();
         }
       });
     } else {
-      /// CREATE MODE
       selectedMeals.addAll(priceControllers.keys);
     }
   }
