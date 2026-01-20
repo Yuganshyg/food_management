@@ -1,10 +1,20 @@
-import 'package:equatable/equatable.dart';
+import '../../data/models/meal_plan_model.dart';
 
-abstract class MealPlanEvent extends Equatable {
-  const MealPlanEvent();
+abstract class MealPlanEvent {}
 
-  @override
-  List<Object> get props => [];
+/// Load all meal plans
+class LoadMealPlans extends MealPlanEvent {}
+
+/// Add a new meal plan
+class AddMealPlan extends MealPlanEvent {
+  final MealPlan plan;
+
+  AddMealPlan(this.plan);
 }
 
-class LoadMealPlans extends MealPlanEvent {}
+/// Update an existing meal plan
+class UpdateMealPlan extends MealPlanEvent {
+  final MealPlan plan;
+
+  UpdateMealPlan(this.plan);
+}

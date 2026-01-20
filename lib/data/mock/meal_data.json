@@ -26,6 +26,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": 2,
+      "name": "Option Plan 2",
+      "frequency": "monthly",
+      "amount": 4700,
+      "meals": [
+        {
+          "id": 1,
+          "type": "breakfast",
+          "startTime": "08:00",
+          "endTime": "10:00",
+          "items": [
+            { "diet": "veg", "name": "idli" },
+            { "diet": "veg", "name": "dosa" },
+            { "diet": "non-veg", "name": "Eggs" }
+          ]
+        },
+        {
+          "id": 2,
+          "type": "lunch",
+          "startTime": "20:00",
+          "endTime": "22:00",
+          "items": [
+            { "diet": "non-veg", "name": "Chicken Curry" },
+            { "diet": "veg", "name": "Paneer Tikka" }
+          ]
+        }
+      ]
     }
   ]
 }
