@@ -13,4 +13,6 @@ class AppIcons {
   static const snacks = 'assets/icons/croissant.svg';
   static const dinner = 'assets/icons/dinner.svg';
   static const star = 'assets/icons/star.svg';
+  static const plan = 'assets/icons/plan.svg';
+  static const calendar = 'assets/icons/calendar.svg';
 }

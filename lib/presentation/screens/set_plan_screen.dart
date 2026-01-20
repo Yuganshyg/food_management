@@ -21,14 +21,12 @@ class SetPlanScreen extends StatefulWidget {
 
 class _SetPlanScreenState extends State<SetPlanScreen> {
   late List<MealDraft> mealDrafts;
-  bool get _isFormValid {
-    return mealDrafts.every((meal) => meal.isValid);
-  }
+
+  bool get _isFormValid => mealDrafts.every((m) => m.isValid);
 
   @override
   void initState() {
     super.initState();
-
     mealDrafts = widget.draftPlan.selectedMeals
         .map((type) => MealDraft(type: type, items: [MealItemDraft()]))
         .toList();
@@ -39,17 +37,13 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     );
-
     if (picked == null) return;
 
     setState(() {
       final formatted = picked.format(context);
-
-      if (isStart) {
-        mealDrafts[index].startTime = formatted;
-      } else {
-        mealDrafts[index].endTime = formatted;
-      }
+      isStart
+          ? mealDrafts[index].startTime = formatted
+          : mealDrafts[index].endTime = formatted;
     });
   }
 
@@ -63,7 +57,6 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
     );
 
     context.read<MealPlanBloc>().add(AddMealPlan(finalPlan));
-
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
@@ -77,12 +70,7 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
           children: [
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(
-                  16,
-                  16,
-                  16,
-                  120, // space for save button
-                ),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
                 itemCount: mealDrafts.length,
                 itemBuilder: (_, index) {
                   final meal = mealDrafts[index];
@@ -92,26 +80,20 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
                     onTimePickStart: () => _pickTime(index, true),
                     onTimePickEnd: () => _pickTime(index, false),
                     onAddDish: () {
-                      setState(() {
-                        meal.items.add(MealItemDraft());
-                      });
+                      setState(() => meal.items.add(MealItemDraft()));
                     },
-                    onRemoveDish: (dishIndex) {
-                      setState(() {
-                        meal.items.removeAt(dishIndex);
-                      });
+                    onRemoveDish: (i) {
+                      setState(() => meal.items.removeAt(i));
                     },
-                    onDietChanged: (dishIndex, diet) {
-                      setState(() {
-                        meal.items[dishIndex].diet = diet;
-                      });
+                    onDietChanged: (i, diet) {
+                      setState(() => meal.items[i].diet = diet);
                     },
                   );
                 },
               ),
             ),
 
-            // ───────── SAVE BUTTON (SVG STYLE) ─────────
+            /// SAVE BUTTON
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               decoration: BoxDecoration(
@@ -131,12 +113,11 @@ class _SetPlanScreenState extends State<SetPlanScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isFormValid
                         ? AppColors.accentBlue
-                        : AppColors.textMutedDark,
+                        : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-
                   onPressed: _isFormValid ? _savePlan : null,
                   child: const Text(
                     'Save',

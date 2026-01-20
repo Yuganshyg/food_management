@@ -28,7 +28,7 @@ class MealSetupCard extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Container(
-          margin: const EdgeInsets.only(bottom: 32),
+          margin: const EdgeInsets.only(bottom: 40),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
@@ -39,22 +39,22 @@ class MealSetupCard extends StatelessWidget {
             children: [
               _header(),
               const SizedBox(height: 16),
-              _timeRow(context),
+              _timeRow(),
               const SizedBox(height: 16),
               _listSection(),
             ],
           ),
         ),
 
-        /// ➕ Half-in / Half-out Add Button (SVG accurate)
+        /// ➕ HALF INSIDE / HALF OUTSIDE (SVG)
         Positioned(
-          bottom: 10,
+          bottom: 20,
           right: 20,
           child: GestureDetector(
             onTap: onAddDish,
             child: Container(
-              height: 42,
-              width: 42,
+              height: 44,
+              width: 44,
               decoration: BoxDecoration(
                 color: AppColors.accentBlue,
                 shape: BoxShape.circle,
@@ -66,7 +66,7 @@ class MealSetupCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 22),
+              child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
         ),
@@ -75,7 +75,6 @@ class MealSetupCard extends StatelessWidget {
   }
 
   // ───────── HEADER ─────────
-
   Widget _header() {
     return Row(
       children: [
@@ -90,34 +89,20 @@ class MealSetupCard extends StatelessWidget {
   }
 
   // ───────── TIME ROW ─────────
-
-  Widget _timeRow(BuildContext context) {
+  Widget _timeRow() {
     return Row(
       children: [
         Expanded(
-          child: _timeBox(
-            label: 'Start Time',
-            value: meal.startTime,
-            onTap: onTimePickStart,
-          ),
+          child: _timeBox('Start Time', meal.startTime, onTimePickStart),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: _timeBox(
-            label: 'End Time',
-            value: meal.endTime,
-            onTap: onTimePickEnd,
-          ),
-        ),
+        Expanded(child: _timeBox('End Time', meal.endTime, onTimePickEnd)),
       ],
     );
   }
 
-  Widget _timeBox({
-    required String label,
-    required String? value,
-    required VoidCallback onTap,
-  }) {
+  /// 🔑 FIX: value is String?
+  Widget _timeBox(String label, String? value, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -140,7 +125,7 @@ class MealSetupCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(value == null || value.isEmpty ? '--:--' : value),
+                  Text((value == null || value.isEmpty) ? '--:--' : value),
                 ],
               ),
             ),
@@ -152,7 +137,6 @@ class MealSetupCard extends StatelessWidget {
   }
 
   // ───────── ITEMS LIST ─────────
-
   Widget _listSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,6 +157,7 @@ class MealSetupCard extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     controller: item.controller,
+                    textDirection: TextDirection.ltr,
                     decoration: const InputDecoration(
                       hintText: 'Enter Item',
                       border: UnderlineInputBorder(),
@@ -180,8 +165,9 @@ class MealSetupCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
 
+                // VEG
                 _dietToggle(
                   icon: AppIcons.veg,
                   selected: item.diet == 'veg',
@@ -189,8 +175,9 @@ class MealSetupCard extends StatelessWidget {
                   onTap: () => onDietChanged(index, 'veg'),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
 
+                // NON-VEG
                 _dietToggle(
                   icon: AppIcons.nonVeg,
                   selected: item.diet == 'nonVeg',
@@ -198,7 +185,7 @@ class MealSetupCard extends StatelessWidget {
                   onTap: () => onDietChanged(index, 'nonVeg'),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
 
                 GestureDetector(
                   onTap: () => onRemoveDish(index),
@@ -212,6 +199,7 @@ class MealSetupCard extends StatelessWidget {
     );
   }
 
+  // ───────── DIET TOGGLE ─────────
   Widget _dietToggle({
     required String icon,
     required bool selected,

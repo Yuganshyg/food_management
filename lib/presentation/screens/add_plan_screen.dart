@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:food_management/presentation/screens/set_plan_screen.dart';
-
-import '../../bloc/meal_plan/meal_plan_bloc.dart';
-import '../../bloc/meal_plan/meal_plan_event.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_icons.dart';
 import '../../data/models/meal_plan_model.dart';
+import 'set_plan_screen.dart';
 
 class AddPlanScreen extends StatefulWidget {
   const AddPlanScreen({super.key});
@@ -15,193 +13,266 @@ class AddPlanScreen extends StatefulWidget {
 }
 
 class _AddPlanScreenState extends State<AddPlanScreen> {
-  final TextEditingController _planNameController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController();
+  // ───────── CONTROLLERS ─────────
+  final TextEditingController planNameController = TextEditingController();
 
-  String _frequency = 'Weekly';
+  bool showBreakdown = true;
+  String frequency = 'Monthly';
 
-  final Map<String, bool> _mealSelection = {
-    'Breakfast': false,
-    'Lunch': false,
-    'Snacks': false,
-    'Dinner': false,
+  final Map<String, TextEditingController> priceControllers = {
+    'Breakfast': TextEditingController(text: '30'),
+    'Lunch': TextEditingController(text: '80'),
+    'Snacks': TextEditingController(text: '30'),
+    'Dinner': TextEditingController(text: '80'),
   };
 
-  @override
-  void dispose() {
-    _planNameController.dispose();
-    _amountController.dispose();
-    super.dispose();
+  final Set<String> selectedMeals = {'Breakfast', 'Lunch', 'Snacks', 'Dinner'};
+
+  // ───────── CALCULATION ─────────
+  int get multiplier {
+    switch (frequency) {
+      case 'Daily':
+        return 1;
+      case 'Weekly':
+        return 7;
+      case 'Monthly':
+      default:
+        return 30;
+    }
   }
 
-  void _onSave() {
-    final name = _planNameController.text.trim();
-    final amountText = _amountController.text.trim();
-
-    if (name.isEmpty || amountText.isEmpty) {
-      _showError('Please fill all fields');
-      return;
+  int get totalAmount {
+    int sum = 0;
+    for (final meal in selectedMeals) {
+      final value = int.tryParse(priceControllers[meal]!.text) ?? 0;
+      sum += value;
     }
+    return sum * multiplier;
+  }
 
-    if (!_mealSelection.containsValue(true)) {
-      _showError('Select at least one meal');
-      return;
-    }
-
-    final amount = int.tryParse(amountText);
-    if (amount == null) {
-      _showError('Amount must be numeric');
-      return;
-    }
-
-    final selectedMeals = _mealSelection.entries
-        .where((e) => e.value)
-        .map((e) => e.key)
-        .toList();
-
-    final plan = MealPlan.draft(
-      name: name,
-      frequency: _frequency,
-      amount: amount,
-      selectedMeals: selectedMeals,
+  // ───────── NAVIGATION ─────────
+  void _continue() {
+    final draft = MealPlan.draft(
+      name: planNameController.text.trim().isEmpty
+          ? 'Meal Plan'
+          : planNameController.text.trim(),
+      frequency: frequency,
+      amount: totalAmount,
+      selectedMeals: selectedMeals.toList(),
     );
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => SetPlanScreen(draftPlan: plan)),
+      MaterialPageRoute(builder: (_) => SetPlanScreen(draftPlan: draft)),
     );
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // 🔑 KEY FIX
-      appBar: AppBar(title: const Text('Add Plan')),
+      appBar: AppBar(
+        leading: const BackButton(),
+        title: const Text('Add Plan'),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: EdgeInsets.fromLTRB(
-            20,
-            12,
-            20,
-            MediaQuery.of(context).viewInsets.bottom + 20, // 🔑 keyboard space
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _label('Plan name'),
-              _textRow(
-                controller: _planNameController,
-                hint: 'Enter plan name',
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // ───────── PLAN NAME (SVG STYLE) ─────────
+                  _card(
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppIcons.plan, height: 28),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: planNameController,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Enter plan name',
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ───────── TOGGLE ─────────
+                  Row(
+                    children: [
+                      const Text(
+                        'Show price breakdown per meal',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      const Spacer(),
+                      Switch(
+                        value: showBreakdown,
+                        activeColor: AppColors.accentBlue,
+                        onChanged: (v) {
+                          setState(() => showBreakdown = v);
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // ───────── MEAL BREAKDOWN ─────────
+                  if (showBreakdown)
+                    _card(
+                      child: Column(
+                        children: priceControllers.keys.map((meal) {
+                          final checked = selectedMeals.contains(meal);
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: checked,
+                                  activeColor: AppColors.accentBlue,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      v!
+                                          ? selectedMeals.add(meal)
+                                          : selectedMeals.remove(meal);
+                                    });
+                                  },
+                                ),
+                                Text(meal),
+                                const Spacer(),
+                                SizedBox(
+                                  width: 80,
+                                  child: TextField(
+                                    controller: priceControllers[meal],
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    decoration: InputDecoration(
+                                      prefixText: '₹ ',
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            vertical: 10,
+                                          ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    onChanged: (_) => setState(() {}),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+
+                  // ───────── TOTAL AMOUNT ─────────
+                  _card(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.currency_rupee),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$totalAmount',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ───────── FREQUENCY DROPDOWN ─────────
+                  _card(
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(AppIcons.calendar, height: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: frequency,
+                              isExpanded: true,
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'Daily',
+                                  child: Text('Daily'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Weekly',
+                                  child: Text('Weekly'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Monthly',
+                                  child: Text('Monthly'),
+                                ),
+                              ],
+                              onChanged: (v) {
+                                setState(() => frequency = v!);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
+            ),
 
-              const SizedBox(height: 24),
-              _label('Select meals'),
-              ..._mealSelection.keys.map(_mealRow).toList(),
-
-              const SizedBox(height: 24),
-              _label('Frequency'),
-              _dropdownRow(),
-
-              const SizedBox(height: 24),
-              _label('Amount'),
-              _textRow(
-                controller: _amountController,
-                hint: 'Enter amount',
-                keyboardType: TextInputType.number,
+            // ───────── SAVE BUTTON ─────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentBlue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: _continue,
+                  child: const Text(
+                    'Save & Continue',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ),
-
-              const SizedBox(height: 32),
-              _saveButton(),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ---------- UI PARTS ----------
-
-  Widget _label(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyMedium?.copyWith(color: AppColors.textMutedDark),
+  // ───────── CARD WIDGET ─────────
+  Widget _card({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.textMutedDark),
       ),
-    );
-  }
-
-  Widget _textRow({
-    required TextEditingController controller,
-    required String hint,
-    TextInputType? keyboardType,
-  }) {
-    return Column(
-      children: [
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          decoration: InputDecoration(hintText: hint, border: InputBorder.none),
-        ),
-        const Divider(height: 1),
-      ],
-    );
-  }
-
-  Widget _mealRow(String meal) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(meal),
-      trailing: Checkbox(
-        value: _mealSelection[meal],
-        onChanged: (value) {
-          setState(() => _mealSelection[meal] = value ?? false);
-        },
-      ),
-    );
-  }
-
-  Widget _dropdownRow() {
-    return Column(
-      children: [
-        DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: _frequency,
-            isExpanded: true,
-            items: [
-              'Daily',
-              'Weekly',
-              'Monthly',
-            ].map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _frequency = value);
-              }
-            },
-          ),
-        ),
-        const Divider(height: 1),
-      ],
-    );
-  }
-
-  Widget _saveButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        onPressed: _onSave,
-        child: const Text('Save & Continue'),
-      ),
+      child: child,
     );
   }
 }
